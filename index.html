@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <title>ConfigCat Test</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="initial-scale=1 maximum-scale=1 user-scalable=0 minimal-ui" />
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/configcat-js@latest/dist/configcat.min.js"></script>
+</head>
+
+<body style="margin: 0px 0px 1px 0px; overflow:hidden;">
+    <style>
+        dot {
+            border-radius: 50%;            
+            pointer-events: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            opacity: 0;
+        }
+    </style>
+
+    <script type="module">
+
+        let logger = configcat.createConsoleLogger(3); // Set the log level to INFO to track how your feature flags were evaluated. When moving to production, you can remove this line to avoid too detailed logging.
+
+        let configCatClient = configcat.createClientWithAutoPoll("J2HaCNKLA0iL-ubVZQeh6g/69GNIKt1TUmJHqnqIq7OMg", { // <-- This is the actual SDK Key for your Test Environment environment
+            pollIntervalSeconds: 10,
+            logger: logger
+        });
+
+        //from https://css-tricks.com/playing-with-particles-using-the-web-animations-api/
+        if (document.body.animate) {
+            async function trigger() { 
+
+                let partyTime = await configCatClient.getValueAsync("partyTime",  false);
+                let numParticles = 10;
+                if (partyTime) {
+                    numParticles = 200;
+                }
+
+                for (let i = 0; i < numParticles; i++) {
+                    createParticle(window.innerWidth/2, window.innerHeight/2);
+                }
+            }
+
+            function createParticle(x, y) {
+                const particle = document.createElement('dot');
+                document.body.appendChild(particle);
+
+                const size = Math.floor(Math.random() * 20 + 5);
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.background = `hsl(${Math.random() * 90 + 180}, 70%, 60%)`;
+
+                const destinationX = x + (Math.random() - 0.5) * 2 * 375;
+                const destinationY = y + (Math.random() - 0.5) * 2 * 375;
+
+                const animation = particle.animate([
+                {
+                    transform: `translate(${x - (size / 2)}px, ${y - (size / 2)}px)`,
+                    opacity: 1
+                },
+                {
+                    transform: `translate(${destinationX}px, ${destinationY}px)`,
+                    opacity: 0
+                }
+                ], 
+                {
+                    duration: 500 + Math.random() * 1000,
+                    easing: 'cubic-bezier(0, .9, .57, 1)',
+                    delay: Math.random() * 200
+                });
+
+                animation.onfinish = () => {
+                    particle.remove();
+                };
+            }
+
+            setInterval(trigger, 500);
+        }
+    </script>
+</body>
+
+</html>
